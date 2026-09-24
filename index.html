@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYC Trip Itinerary</title>
+<style>
+  :root {
+    --bg: #EEEBE3;
+    --panel: #E2DDD0;
+    --line: #CBC4B3;
+    --text: #3A362F;
+    --dim: #55503F;
+    --travel: #AFD4E0;
+    --food: #F4C98A;
+    --event: #D9C2E3;
+    --flight: #F0B4AC;
+    --free-text: #4A4636;
+    --mono-green: #6E5A3B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .nyc-trip {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 48px;
+  }
+
+  /* ---------- Masthead & tabs ---------- */
+
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    border-bottom: 3px solid var(--text);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .masthead h1 {
+    font-size: 26px;
+    letter-spacing: 0.5px;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .masthead .route {
+    font-family: "Courier New", monospace;
+    color: var(--mono-green);
+    font-size: 13px;
+    letter-spacing: 1px;
+    background: #F5F2EA;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .tab-btn {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--dim);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: color .15s, background .15s, border-color .15s;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: #F5F2EA;
+    background: var(--mono-green);
+    border-color: var(--mono-green);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 0 22px;
+    font-size: 12.5px;
+    color: var(--dim);
+  }
+
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---------- List view ---------- */
+
+  .day-card {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .day-card .day-head {
+    background: var(--panel);
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 15px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .day-card .day-head .subtitle {
+    font-weight: 400;
+    font-size: 12.5px;
+    color: var(--dim);
+  }
+
+  .entry {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .entry:last-child { border-bottom: none; }
+
+  .entry .bar {
+    flex: 0 0 4px;
+    border-radius: 2px;
+    align-self: stretch;
+  }
+
+  .entry.t-flight .bar { background: var(--flight); }
+  .entry.t-travel .bar { background: var(--travel); }
+  .entry.t-food .bar { background: var(--food); }
+  .entry.t-event .bar { background: var(--event); }
+  .entry.t-free .bar { background: #CBC4B3; }
+
+  .entry .content { flex: 1; min-width: 0; }
+
+  .entry .time {
+    font-family: "Courier New", monospace;
+    color: var(--mono-green);
+    font-size: 12.5px;
+    margin-bottom: 3px;
+  }
+
+  .entry .title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .entry.t-free .title { font-weight: 400; font-style: italic; color: var(--free-text); }
+
+  .entry .detail {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+
+  .entry .detail em { color: var(--text); font-style: normal; }
+
+  .entry ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+
+  .notes-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.6;
+  }
+
+  .notes-box strong { color: var(--text); }
+  .notes-box ul { margin: 8px 0 0; padding-left: 18px; }
+
+  .refs {
+    margin-top: 8px;
+  }
+
+  .refs table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  .refs th, .refs td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .refs th {
+    background: var(--panel);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--dim);
+  }
+
+  .refs td:first-child { color: var(--mono-green); font-family: "Courier New", monospace; white-space: nowrap; }
+
+  h2.section-title {
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    margin: 26px 0 10px;
+    color: var(--text);
+  }
+
+  /* ---------- Calendar view ---------- */
+
+  .cal-scroller {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .cal-scroller table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 780px;
+    font-size: 12.5px;
+  }
+
+  .cal-scroller thead th {
+    background: var(--panel);
+    color: var(--text);
+    text-align: left;
+    padding: 10px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    border-bottom: 2px solid var(--line);
+    position: sticky;
+    top: 0;
+  }
+
+  .cal-scroller thead th.timecol { width: 64px; }
+
+  .cal-scroller thead th .day-num {
+    display: block;
+    font-family: "Courier New", monospace;
+    color: var(--dim);
+    font-weight: 400;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .cal-scroller tbody th {
+    font-family: "Courier New", monospace;
+    color: var(--mono-green);
+    background: #F5F2EA;
+    font-weight: 400;
+    text-align: right;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    white-space: nowrap;
+    font-size: 11.5px;
+  }
+
+  .cal-scroller tbody tr:nth-child(2n) th { background: #E7E2D4; }
+
+  .cal-scroller td {
+    padding: 0;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    vertical-align: middle;
+    height: 30px;
+  }
+
+  .cal-block {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 3px 8px;
+    color: var(--text);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .cal-b-travel { background: var(--travel); }
+  .cal-b-food { background: var(--food); }
+  .cal-b-event { background: var(--event); }
+  .cal-b-flight { background: var(--flight); }
+  .cal-b-free { background: #E3DED2; color: var(--free-text); font-style: italic; font-weight: 400; }
+  .cal-b-none { background: repeating-linear-gradient(45deg, #DAD4C4, #DAD4C4 6px, #E2DDD0 6px, #E2DDD0 12px); }
+
+  @media (max-width: 600px) {
+    .nyc-trip { padding: 18px 10px 28px; }
+    .masthead h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="nyc-trip">
+
+  <div class="masthead">
+    <h1>NYC Trip Itinerary</h1>
+    <span class="route">MSN ⇄ EWR · SEP 24–28 2026</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="list">List View</button>
+    <button class="tab-btn" data-tab="calendar">Calendar View</button>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#F0B4AC"></i>Flight</span>
+    <span><i style="background:#AFD4E0"></i>Travel / transit</span>
+    <span><i style="background:#F4C98A"></i>Dining</span>
+    <span><i style="background:#D9C2E3"></i>Reservation / event</span>
+    <span><i style="background:#E3DED2;border:1px solid #CBC4B3"></i>Free time</span>
+  </div>
+
+  <!-- ===================== LIST VIEW ===================== -->
+  <div id="tab-list" class="tab-panel active">
+
+    <div class="day-card">
+      <div class="day-head">Thursday, September 24 <span class="subtitle">Arrival</span></div>
+      <div class="entry t-flight">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">11:40 AM – 3:04 PM</div>
+          <div class="title">Flight UA 3675 · Madison (MSN) → Newark (EWR)</div>
+          <div class="detail">Confirmation: F4B34P · Seats 21A/21B</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">~3:30 – 4:30 PM</div>
+          <div class="title">Travel: EWR → The Jewel Hotel (11 W 51st St)</div>
+          <div class="detail">🚗 Uber/Lyft or taxi — ~45–60 min depending on traffic and bag claim. Leave the airport ~3:30 PM (after deplaning/bags) to arrive by ~4:15–4:30 PM. Check-in from 3:00 PM.</div>
+        </div>
+      </div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">4:30 – 6:45 PM</div>
+          <div class="title">Free time</div>
+          <div class="detail">Rest, freshen up, or explore Midtown near the hotel.</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Leave ~7:00 PM</div>
+          <div class="title">Travel: Hotel → Central Park Boathouse (Park Dr N / E 72nd St)</div>
+          <div class="detail">🚶 Walk through Central Park — ~25–30 min (scenic). 🚗 Uber/Lyft — ~15 min (faster). Leave by 7:00 PM to arrive by 7:25 PM.</div>
+        </div>
+      </div>
+      <div class="entry t-food">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">7:30 PM</div>
+          <div class="title">Dinner — Central Park Boathouse</div>
+          <div class="detail">Table for 2 · Confirmation #219331 · (718) 973-9339</div>
+        </div>
+      </div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">After dinner</div>
+          <div class="title">Free time</div>
+          <div class="detail">Stroll back through the park or Uber back to the hotel (~15 min).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-head">Friday, September 25 <span class="subtitle">Chelsea / Meatpacking + Sunset Cruise</span></div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Morning</div>
+          <div class="title">Free time</div>
+          <div class="detail">Sleep in, breakfast near the hotel — a later start today.</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Leave ~12:35 PM</div>
+          <div class="title">Travel: Hotel → Chelsea Market (75 9th Ave) — direct to lunch</div>
+          <div class="detail">🚇 Subway (1 train, or A/C/E, to 14th St) — ~25 min. 🚗 Uber/Lyft — ~20 min. Arrive by 1:00 PM.</div>
+        </div>
+      </div>
+      <div class="entry t-food">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">1:00 PM</div>
+          <div class="title">Lunch — Chelsea Market (75 9th Ave)</div>
+          <div class="detail">Quick, casual, tons of vendor options (tacos, lobster rolls, ramen, baked goods) — ~45 min–1 hr.</div>
+        </div>
+      </div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">~2:00 – 5:30 PM</div>
+          <div class="title">Free time — explore Chelsea/Meatpacking</div>
+          <ul>
+            <li>Walk a stretch of the <em>High Line</em> (ends right near Gansevoort St/Meatpacking)</li>
+            <li>Browse the <em>Chelsea gallery district</em> (W 19th–26th St, between 10th & 11th Ave)</li>
+            <li><em>Whitney Museum of American Art</em> at the High Line's southern end, if you want an indoor stop</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">~5:30 PM</div>
+          <div class="title">Travel: Chelsea/Meatpacking → Pier 62, Chelsea Piers</div>
+          <div class="detail">🚶 Walk — ~10–15 min. Check in 15–20 min early per Classic Harbor Line → arrive by 5:40–5:45 PM.</div>
+        </div>
+      </div>
+      <div class="entry t-event">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">6:00 – 7:30 PM</div>
+          <div class="title">Sunset Cruise on Yacht Manhattan</div>
+          <div class="detail">Booking #380115677 · Order #GHFVLQ · Depart from Pier 62 ticket booth</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">After cruise</div>
+          <div class="title">Travel: Pier 62 → Pastis (52 Gansevoort St)</div>
+          <div class="detail">🚶 Walk — ~20 min along the waterfront/into Meatpacking. You'll have slack before your reservation — no rush.</div>
+        </div>
+      </div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">7:50 – 9:10 PM</div>
+          <div class="title">Free time</div>
+          <div class="detail">Browse Meatpacking shops, grab a drink, or just relax before dinner.</div>
+        </div>
+      </div>
+      <div class="entry t-food">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">9:30 PM</div>
+          <div class="title">Dinner — Pastis (52 Gansevoort St)</div>
+          <div class="detail">2 guests, indoors · Call ahead if running more than 15 min late: (212) 929-4844</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-head">Saturday, September 26 <span class="subtitle">SUMMIT One Vanderbilt + Last Week Tonight</span></div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Early morning</div>
+          <div class="title">Free time</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Leave ~9:40 AM</div>
+          <div class="title">Travel: Hotel → SUMMIT One Vanderbilt (45 E 42nd St)</div>
+          <div class="detail">🚶 Walk — ~15 min. 🚗 Uber/Lyft — ~10 min. Arrive at your scheduled time.</div>
+        </div>
+      </div>
+      <div class="entry t-event">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">10:00 AM</div>
+          <div class="title">SUMMIT One Vanderbilt — SUMMIT Ascent</div>
+          <div class="detail">2 adult tickets · Confirmation ID 20260923-50068205. Immersive, multisensory experience with mirrored floors — wear something easy to walk in, bring sunglasses if it's bright out. Expect a security screening; no bags/suitcases or outside food & drink; restrooms aren't accessible until the first floor "in the sky" (~15 min in). <em>Visit length isn't specified on the ticket — budget roughly 1.5–2 hours as an estimate.</em></div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">~11:30 AM – 12:00 PM</div>
+          <div class="title">Wrap up / travel back toward the hotel</div>
+        </div>
+      </div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">12:00 – 2:30 PM</div>
+          <div class="title">Free time</div>
+          <div class="detail">Lunch, rest before the show.</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Leave 2:30 PM</div>
+          <div class="title">Travel: Hotel → CBS Broadcast Center (530 West 57th St)</div>
+          <div class="detail">🚶 Walk — ~25–28 min. 🚇 Subway — 1, A, or C to 59th St–Columbus Circle, then ~10–12 min walk (~20–25 min total). 🚗 Uber/Lyft — ~15–20 min. Doors open 3:00 PM and you want to be right on time.</div>
+        </div>
+      </div>
+      <div class="entry t-event">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">3:00 PM</div>
+          <div class="title">Arrive & check in — CBS Broadcast Center, 530 lobby entrance</div>
+          <div class="detail">Tell the audience assistant you're on the <em>FAN list</em>. They check you in by name — bring a government-issued photo ID for each guest. Confirmed: 2 tickets under Anna Verber (Show #0926). Hard cutoff: in the lobby no later than 3:30 PM, doors close at 3:35 PM.</div>
+        </div>
+      </div>
+      <div class="entry t-event">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">3:30 – 4:45 PM</div>
+          <div class="title">Pre-show check-in & seated wait inside the studio</div>
+        </div>
+      </div>
+      <div class="entry t-event">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">4:45 PM</div>
+          <div class="title">Taping begins — Last Week Tonight with John Oliver</div>
+          <div class="detail">No early exit once the taping starts. Runs until approximately 6:45 PM.</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">After taping</div>
+          <div class="title">Travel back toward the hotel</div>
+          <div class="detail">🚶 or 🚗 Uber/Lyft — ~15–25 min.</div>
+        </div>
+      </div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">~7:30 PM onward</div>
+          <div class="title">Free time</div>
+          <div class="detail">No dinner reservation on file tonight — worth booking something in Hell's Kitchen (right by the studio) or heading back toward Midtown.</div>
+        </div>
+      </div>
+      <div class="notes-box">
+        <strong>Before you go:</strong>
+        <ul>
+          <li>Bring a government-issued photo ID (passport or official ID) for each guest — required at check-in</li>
+          <li>Dress in "camera-friendly" clothes: no white t-shirts, no large logos</li>
+          <li>No food or drink allowed inside (a personal water bottle is fine)</li>
+          <li>No recording of any kind — phones and devices must be off once you're in the studio</li>
+          <li>Seating is first-come, first-served even among confirmed FAN-list guests</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-head">Sunday, September 27 <span class="subtitle">Gramercy Tavern</span></div>
+      <div class="entry t-free">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">All day until early evening</div>
+          <div class="title">Free time</div>
+          <div class="detail">No fixed plans.</div>
+        </div>
+      </div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Leave 6:05 – 6:10 PM</div>
+          <div class="title">Travel: Hotel → The Dining Room at Gramercy Tavern (42 E 20th St)</div>
+          <div class="detail">🚇 Subway — 6 train to 23rd St, then short walk — ~20 min. 🚗 Uber/Lyft — ~15 min depending on traffic.</div>
+        </div>
+      </div>
+      <div class="entry t-food">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">6:30 PM</div>
+          <div class="title">Dinner — The Dining Room at Gramercy Tavern</div>
+          <div class="detail">5-Course Seasonal Menu, table for 2 · Confirmation #2110915847 · (212) 477-0777. <em>Note: this restaurant holds your table with a credit card and charges a $35/person no-show/late-cancellation fee.</em></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-head">Monday, September 28 <span class="subtitle">Departure</span></div>
+      <div class="entry t-travel">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">Leave 6:00 – 6:15 AM</div>
+          <div class="title">Travel: The Jewel Hotel → Newark (EWR)</div>
+          <div class="detail">🚗 Uber/Lyft or taxi — ~45–60 min depending on traffic. For an 8:46 AM flight, leave the hotel by 6:00–6:15 AM to allow for airport check-in/security.</div>
+        </div>
+      </div>
+      <div class="entry t-flight">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="time">8:46 – 10:29 AM</div>
+          <div class="title">Flight UA 3712 · Newark (EWR) → Madison (MSN)</div>
+          <div class="detail">Confirmation: F4B34P. <em>Hotel checkout isn't until noon, but since your flight departs early, settle up and grab bags before heading to the airport.</em></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Quick reference — reservation confirmations</h2>
+    <div class="refs">
+      <table>
+        <thead><tr><th>Date</th><th>Time</th><th>Item</th><th>Confirmation</th></tr></thead>
+        <tbody>
+          <tr><td>Thu 9/24</td><td>11:40 AM</td><td>Flight MSN→EWR</td><td>F4B34P</td></tr>
+          <tr><td>Thu 9/24</td><td>7:30 PM</td><td>Central Park Boathouse</td><td>#219331</td></tr>
+          <tr><td>Fri 9/25</td><td>6:00 PM</td><td>Sunset Cruise, Yacht Manhattan</td><td>#380115677</td></tr>
+          <tr><td>Fri 9/25</td><td>9:30 PM</td><td>Pastis</td><td>(Resy, no separate #)</td></tr>
+          <tr><td>Sat 9/26</td><td>10:00 AM</td><td>SUMMIT One Vanderbilt (2 tickets)</td><td>20260923-50068205</td></tr>
+          <tr><td>Sat 9/26</td><td>3:00 PM</td><td>Last Week Tonight w/ John Oliver (2 FAN tickets)</td><td>Show #0926</td></tr>
+          <tr><td>Sun 9/27</td><td>6:30 PM</td><td>Gramercy Tavern</td><td>#2110915847</td></tr>
+          <tr><td>Mon 9/28</td><td>8:46 AM</td><td>Flight EWR→MSN</td><td>F4B34P</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ===================== CALENDAR VIEW ===================== -->
+  <div id="tab-calendar" class="tab-panel">
+    <div class="cal-scroller">
+      <table>
+        <thead>
+          <tr>
+            <th class="timecol">Time</th>
+            <th>Thu<span class="day-num">9/24</span></th>
+            <th>Fri<span class="day-num">9/25</span></th>
+            <th>Sat<span class="day-num">9/26</span></th>
+            <th>Sun<span class="day-num">9/27</span></th>
+            <th>Mon<span class="day-num">9/28</span></th>
+          </tr>
+        </thead>
+        <tbody id="grid-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // Tab switching
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  var panels = { list: document.getElementById('tab-list'), calendar: document.getElementById('tab-calendar') };
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      Object.keys(panels).forEach(function(k) { panels[k].classList.remove('active'); });
+      panels[btn.dataset.tab].classList.add('active');
+    });
+  });
+
+  // Calendar grid build
+  var TYPE_CLASS = {
+    flight: 'cal-b-flight',
+    travel: 'cal-b-travel',
+    food: 'cal-b-food',
+    event: 'cal-b-event',
+    free: 'cal-b-free'
+  };
+
+  function t(h, m) { return h * 60 + m; }
+
+  var days = {
+    thu: [
+      {s:t(11,30), e:t(15,0), label:'✈ Flight UA3675 · MSN → EWR (in flight, lands 3:04)', type:'flight'},
+      {s:t(15,0), e:t(15,30), label:'Deplane / bag claim, EWR', type:'travel'},
+      {s:t(15,30), e:t(16,30), label:'🚗 Travel: EWR → hotel (Uber/taxi) → check in', type:'travel'},
+      {s:t(16,30), e:t(18,30), label:'Free time', type:'free'},
+      {s:t(18,30), e:t(19,0), label:'🚶 Travel to Central Park Boathouse', type:'travel'},
+      {s:t(19,0), e:t(19,30), label:'Arrival buffer', type:'travel'},
+      {s:t(19,30), e:t(21,0), label:'🍽 Dinner — Central Park Boathouse', type:'food'},
+      {s:t(21,0), e:t(21,30), label:'🚶 Travel back to hotel', type:'travel'},
+      {s:t(21,30), e:t(23,30), label:'Free time', type:'free'}
+    ],
+    fri: [
+      {s:t(6,0), e:t(12,30), label:'Free time (later start — sleep in, breakfast)', type:'free'},
+      {s:t(12,30), e:t(13,0), label:'🚇 Travel direct to lunch — Chelsea Market', type:'travel'},
+      {s:t(13,0), e:t(14,0), label:'🍴 Lunch — Chelsea Market', type:'food'},
+      {s:t(14,0), e:t(17,30), label:'Explore: High Line, galleries, Whitney', type:'free'},
+      {s:t(17,30), e:t(18,0), label:'🚶 Travel to Pier 62, check in', type:'travel'},
+      {s:t(18,0), e:t(19,30), label:'⛵ Sunset Cruise — Yacht Manhattan', type:'event'},
+      {s:t(19,30), e:t(20,0), label:'🚶 Travel toward Pastis', type:'travel'},
+      {s:t(20,0), e:t(21,0), label:'Free time — browse Meatpacking', type:'free'},
+      {s:t(21,0), e:t(21,30), label:'🚶 Arrive at Pastis', type:'travel'},
+      {s:t(21,30), e:t(23,0), label:'🍽 Dinner — Pastis', type:'food'},
+      {s:t(23,0), e:t(23,30), label:'🚗 Travel back to hotel', type:'travel'}
+    ],
+    sat: [
+      {s:t(6,0), e:t(9,30), label:'Free time', type:'free'},
+      {s:t(9,30), e:t(10,0), label:'🚶 Travel to SUMMIT One Vanderbilt', type:'travel'},
+      {s:t(10,0), e:t(11,30), label:'🏙 SUMMIT One Vanderbilt — Ascent experience', type:'event'},
+      {s:t(11,30), e:t(12,0), label:'🚶 Travel back toward hotel', type:'travel'},
+      {s:t(12,0), e:t(14,30), label:'Free time — lunch, rest', type:'free'},
+      {s:t(14,30), e:t(15,0), label:'🚶 Travel to CBS Broadcast Center, 530 W 57th St', type:'travel'},
+      {s:t(15,0), e:t(16,30), label:'🎟 Check in (FAN list) & pre-show wait, arrive by 3:00 PM', type:'event'},
+      {s:t(16,30), e:t(19,0), label:'🎬 Last Week Tonight taping (4:45–6:45 PM)', type:'event'},
+      {s:t(19,0), e:t(19,30), label:'🚶 Travel back toward hotel', type:'travel'},
+      {s:t(19,30), e:t(23,30), label:'Free time — dinner not yet booked', type:'free'}
+    ],
+    sun: [
+      {s:t(6,0), e:t(17,30), label:'Free time', type:'free'},
+      {s:t(17,30), e:t(18,0), label:'🚇 Travel to Gramercy Tavern', type:'travel'},
+      {s:t(18,0), e:t(20,30), label:'🍽 Dinner — Gramercy Tavern (5-course)', type:'food'},
+      {s:t(20,30), e:t(21,0), label:'🚗 Travel back to hotel', type:'travel'},
+      {s:t(21,0), e:t(23,30), label:'Free time', type:'free'}
+    ],
+    mon: [
+      {s:t(6,0), e:t(6,30), label:'Check out of hotel', type:'travel'},
+      {s:t(6,30), e:t(7,30), label:'🚗 Travel to EWR', type:'travel'},
+      {s:t(7,30), e:t(8,30), label:'Airport check-in / security', type:'travel'},
+      {s:t(8,30), e:t(10,30), label:'✈ Flight UA3712 · EWR → MSN (lands 10:29)', type:'flight'}
+    ]
+  };
+
+  var dayOrder = ['thu','fri','sat','sun','mon'];
+  var gridStart = t(6,0), gridEnd = t(23,30);
+  var rows = [];
+  for (var m = gridStart; m < gridEnd; m += 30) rows.push(m);
+
+  function fmt(mins) {
+    var h = Math.floor(mins/60), mm = mins%60;
+    var suffix = h < 12 ? 'AM' : 'PM';
+    var h12 = h % 12; if (h12 === 0) h12 = 12;
+    return h12 + (mm === 0 ? ':00' : ':30') + ' ' + suffix;
+  }
+
+  var dayMaps = {};
+  dayOrder.forEach(function(d) {
+    var map = {};
+    var events = days[d];
+    rows.forEach(function(r) { map[r] = null; });
+    events.forEach(function(ev) {
+      var span = Math.round((ev.e - ev.s) / 30);
+      map[ev.s] = { label: ev.label, type: ev.type, span: span };
+      for (var k = 1; k < span; k++) {
+        var covered = ev.s + k*30;
+        if (covered in map) map[covered] = 'covered';
+      }
+    });
+    dayMaps[d] = map;
+  });
+
+  var tbody = document.getElementById('grid-body');
+  var html = '';
+  rows.forEach(function(r) {
+    html += '<tr><th>' + fmt(r) + '</th>';
+    dayOrder.forEach(function(d) {
+      var cell = dayMaps[d][r];
+      if (cell === 'covered') { return; }
+      if (cell === null || cell === undefined) {
+        html += '<td class="cal-b-none"></td>';
+      } else {
+        var cls = TYPE_CLASS[cell.type] || 'cal-b-free';
+        html += '<td rowspan="' + cell.span + '"><div class="cal-block ' + cls + '">' + cell.label + '</div></td>';
+      }
+    });
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+})();
+</script>
+</body>
+</html>
