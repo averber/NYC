@@ -236,6 +236,54 @@
     color: var(--text);
   }
 
+  /* ---------- Free time ideas ---------- */
+
+  .idea-card {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .idea-card .idea-head {
+    background: var(--panel);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .idea-card .idea-head .place {
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .idea-card .idea-head .when {
+    font-family: "Courier New", monospace;
+    font-size: 11.5px;
+    color: var(--mono-green);
+    background: #F5F2EA;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
+
+  .idea-card ul {
+    margin: 0;
+    padding: 12px 16px 14px 32px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .idea-card ul li::marker { color: var(--dim); }
+
+  .idea-card ul em { color: var(--dim); font-style: normal; }
+
   /* ---------- Calendar view ---------- */
 
   .cal-scroller {
@@ -331,9 +379,10 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="list">List View</button>
     <button class="tab-btn" data-tab="calendar">Calendar View</button>
+    <button class="tab-btn" data-tab="ideas">Free Time Ideas</button>
   </div>
 
-  <div class="legend">
+  <div class="legend" id="legend-row">
     <span><i style="background:#F0B4AC"></i>Flight</span>
     <span><i style="background:#AFD4E0"></i>Travel / transit</span>
     <span><i style="background:#F4C98A"></i>Dining</span>
@@ -661,19 +710,89 @@
     </div>
   </div>
 
+  <!-- ===================== FREE TIME IDEAS ===================== -->
+  <div id="tab-ideas" class="tab-panel">
+
+    <div class="idea-card">
+      <div class="idea-head">
+        <span class="place">Near the hotel (Midtown, around 51st St)</span>
+        <span class="when">Thu afternoon · Fri morning · Sat early/midday</span>
+      </div>
+      <ul>
+        <li><em>Top of the Rock</em> or just wandering Rockefeller Center — a few blocks away</li>
+        <li><em>St. Patrick's Cathedral</em> — quick, free, right on 5th Ave</li>
+        <li><em>MoMA</em> (W 53rd St) — if you want an indoor art fix</li>
+        <li><em>Bryant Park</em> — good for just sitting, people-watching, or a coffee</li>
+        <li><em>Grand Central Terminal</em> — free to explore, worth a wander even without a train to catch</li>
+        <li><em>5th Ave window shopping</em> (Saks, Tiffany, etc.)</li>
+      </ul>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-head">
+        <span class="place">Central Park / Upper East Side</span>
+        <span class="when">Thu, after Boathouse dinner</span>
+      </div>
+      <ul>
+        <li>Evening stroll through the park back toward the hotel (main paths near Bethesda Terrace are nice at dusk)</li>
+        <li>Slow walk down 5th Ave along the park edge if you'd rather stay on the street</li>
+      </ul>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-head">
+        <span class="place">Chelsea / Meatpacking</span>
+        <span class="when">Fri afternoon & evening</span>
+      </div>
+      <ul>
+        <li>Keep walking the <em>High Line</em> further than planned — it runs a good distance</li>
+        <li><em>Little Island</em> — small floating park at Pier 55, free, right along the water</li>
+        <li>More time in <em>Chelsea Market</em> for browsing/shops beyond lunch</li>
+        <li>A pre-dinner drink at one of the rooftop bars in Meatpacking</li>
+      </ul>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-head">
+        <span class="place">Hell's Kitchen / near the CBS Broadcast Center</span>
+        <span class="when">Sat, after the taping</span>
+      </div>
+      <ul>
+        <li>Casual dinner in Hell's Kitchen's restaurant row (9th Ave in the 40s/50s has a ton of options)</li>
+        <li>Walk over to <em>Hudson River Park</em> for water views</li>
+        <li><em>Intrepid Sea, Air & Space Museum</em> is nearby — worth checking hours that day</li>
+      </ul>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-head">
+        <span class="place">Open day before Gramercy Tavern</span>
+        <span class="when">Sun, all day</span>
+      </div>
+      <ul>
+        <li>A museum you haven't hit yet — <em>Whitney</em> or <em>the Met</em></li>
+        <li>Central Park bike rental</li>
+        <li>Drift toward <em>Flatiron / Madison Square Park</em> in the afternoon — sets you up close to Gramercy Tavern for dinner</li>
+      </ul>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
 (function() {
   // Tab switching
   var tabBtns = document.querySelectorAll('.tab-btn');
-  var panels = { list: document.getElementById('tab-list'), calendar: document.getElementById('tab-calendar') };
+  var panels = { list: document.getElementById('tab-list'), calendar: document.getElementById('tab-calendar'), ideas: document.getElementById('tab-ideas') };
+  var legendRow = document.getElementById('legend-row');
   tabBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {
       tabBtns.forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       Object.keys(panels).forEach(function(k) { panels[k].classList.remove('active'); });
       panels[btn.dataset.tab].classList.add('active');
+      legendRow.style.display = (btn.dataset.tab === 'ideas') ? 'none' : 'flex';
     });
   });
 
